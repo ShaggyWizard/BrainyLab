@@ -1,24 +1,29 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-public class Avatar : MonoBehaviour,
-    IUsable, IDamageable
+public class Avatar : MonoBehaviour, IDamageable
 {
     [Header("Settings")]
     [SerializeField, Min(0f)] private float _speed;
+    [SerializeField, Min(0f)] private float _useCooldown;
 
     [Header("Dependencies")]
     [SerializeField] private Rigidbody _rigidbody;
     [SerializeField] private MonoBehaviour _toolGameObject;
 
     [Header("Inputs")]
+    [SerializeField] private MonoBehaviour _userGameObject;
     [SerializeField] private MonoBehaviour _moveGameObject;
     [SerializeField] private MonoBehaviour _rotateGameObject;
 
 
     private IUsable _tool;
+    private IUser _user;
     private IMove _move;
     private ILook _rotate;
+
+    private float _canUseTime;
 
 
     private void Awake()
@@ -28,6 +33,11 @@ public class Avatar : MonoBehaviour,
         {
             fail = true;
             Debug.LogError("Avatar - Must have Rigidbody.");
+        }
+        if (!_userGameObject.TryGetComponent(out _user))
+        {
+            fail = true;
+            Debug.LogError("Avatar - User GameObject must have a IUser.");
         }
         if (!_moveGameObject.TryGetComponent(out _move))
         {
@@ -46,6 +56,9 @@ public class Avatar : MonoBehaviour,
             return;
         }
 
+        _toolGameObject.TryGetComponent(out _tool);
+
+        _user.OnUse += Use;
         _move.OnMove += Move;
         _rotate.OnLook += LookAt;
     }
@@ -55,12 +68,15 @@ public class Avatar : MonoBehaviour,
     {
         Debug.Log($"{name} took {damage} damage");
     }
-    public void Use()
+
+
+    private void Use()
     {
+        if (Time.time < _canUseTime) { return; }
+
+        _canUseTime = Time.time + _useCooldown;
         _tool?.Use();
     }
-
-    
     private void Move(Vector3 moveDelta)
     {
         _rigidbody.velocity = moveDelta * _speed;
