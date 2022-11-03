@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class Bullet : MonoBehaviour, IPooledObject
@@ -6,28 +7,26 @@ public class Bullet : MonoBehaviour, IPooledObject
     [SerializeField] private float _lifetime;
 
 
+    public event Action<IPooledObject> OnRelease;
+
+
     private float _timeLeft;
 
-    public void Init(Vector3 position, Quaternion rotation)
-    {
-        transform.position = position;
-        transform.rotation = rotation;
-    }
 
     public IPooledObject Instantiate(Transform parent)
     {
         return Instantiate(gameObject).GetComponent<Bullet>();
     }
 
-    private void Awake()
-    {
-        _timeLeft = _lifetime;
-    }
+
     private void Update()
     {
         _timeLeft -= Time.deltaTime;
         if (_timeLeft < 0)
-            Destroy(gameObject);
+        {
+            OnRelease.Invoke(this);
+            return;
+        }
 
 
         float distanceLeft = _speed * Time.deltaTime;
@@ -56,5 +55,22 @@ public class Bullet : MonoBehaviour, IPooledObject
 
         transform.position = currentPos;
         transform.rotation = Quaternion.LookRotation(currentDir);
+    }
+
+
+    public void OnPoolGet(Vector3 position, Quaternion rotation)
+    {
+        transform.position = position;
+        transform.rotation = rotation;
+        _timeLeft = _lifetime;
+        gameObject.SetActive(true);
+    }
+    public void OnPoolRelease()
+    {
+        gameObject.SetActive(false);
+    }
+    public void OnPoolDestroy()
+    {
+        Destroy(gameObject);
     }
 }

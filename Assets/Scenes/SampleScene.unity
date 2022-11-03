@@ -875,7 +875,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _speed: 1000
-  _useCooldown: 1
+  _useCooldown: 0.1
   _rigidbody: {fileID: 1910043986}
   _toolGameObject: {fileID: 1329021738}
   _userGameObject: {fileID: 1910043985}

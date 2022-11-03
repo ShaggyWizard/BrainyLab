@@ -20,23 +20,32 @@ public class Gun : MonoBehaviour, IUsable
         {
             Debug.LogError("Gun - IPooledObject Pooled Game Object must have a IPooledObject.");
         }
-        _pool = new ObjectPool<IPooledObject>(createFunc: CreatePooledObject);
+        _pool = new ObjectPool<IPooledObject>(CreatePooledObject, OnGetPooledObject, OnReleasePooledObject, OnDestroyPooledObject, false, 10, 1000);
     }
+
 
     public void Use()
     {
-        Spawn(_spawnPoint.position, _spawnPoint.rotation);
+        _pool.Get();
     }
 
-
-    private void Spawn(Vector3 position, Quaternion direction)
-    {
-        var pooledObject = _pool.Get();
-        pooledObject.Init(position, direction);
-    }
 
     private IPooledObject CreatePooledObject()
     {
-        return _pooledObject.Instantiate(transform);
+        var obj = _pooledObject.Instantiate(transform);
+        obj.OnRelease += (s) => _pool.Release(s); ;
+        return obj;
+    }
+    private void OnGetPooledObject(IPooledObject obj)
+    {
+        obj.OnPoolGet(_spawnPoint.position, _spawnPoint.rotation);
+    }
+    private void OnReleasePooledObject(IPooledObject obj)
+    {
+        obj.OnPoolRelease();
+    }
+    private void OnDestroyPooledObject(IPooledObject obj)
+    {
+        obj.OnPoolDestroy();
     }
 }
