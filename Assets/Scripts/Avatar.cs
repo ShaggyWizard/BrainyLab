@@ -34,17 +34,17 @@ public class Avatar : MonoBehaviour, IDamageable
             fail = true;
             Debug.LogError("Avatar - Must have Rigidbody.");
         }
-        if (!_userGameObject.TryGetComponent(out _user))
+        if (!_userGameObject || !_userGameObject.TryGetComponent(out _user))
         {
             fail = true;
             Debug.LogError("Avatar - User GameObject must have a IUser.");
         }
-        if (!_moveGameObject.TryGetComponent(out _move))
+        if (!_moveGameObject || !_moveGameObject.TryGetComponent(out _move))
         {
             fail = true;
             Debug.LogError("Avatar - Move GameObject must have a IMove.");
         }
-        if (!_rotateGameObject.TryGetComponent(out _rotate))
+        if (!_rotateGameObject || !_rotateGameObject.TryGetComponent(out _rotate))
         {
             fail = true;
             Debug.LogError("Avatar - Rotate GameObject must have a IRotate.");

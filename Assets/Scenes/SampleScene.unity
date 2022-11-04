@@ -835,7 +835,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1910043983}
   - component: {fileID: 1910043984}
-  - component: {fileID: 1910043985}
   - component: {fileID: 1910043987}
   - component: {fileID: 1910043986}
   m_Layer: 0
@@ -878,22 +877,9 @@ MonoBehaviour:
   _useCooldown: 0.1
   _rigidbody: {fileID: 1910043986}
   _toolGameObject: {fileID: 1329021738}
-  _userGameObject: {fileID: 1910043985}
-  _moveGameObject: {fileID: 1910043985}
-  _rotateGameObject: {fileID: 1910043985}
---- !u!114 &1910043985
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1910043982}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 345d421cc5f93c74d861f0f99f03c433, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _mouseLookPlaneHeight: 0
+  _userGameObject: {fileID: 0}
+  _moveGameObject: {fileID: 0}
+  _rotateGameObject: {fileID: 0}
 --- !u!54 &1910043986
 Rigidbody:
   m_ObjectHideFlags: 0
