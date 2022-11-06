@@ -1,21 +1,19 @@
-using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
-using UnityEngine.Serialization;
 
-public class Avatar : MonoBehaviour, IDamageable
+public class Avatar : MonoBehaviour, IDamageable, ITrajectory
 {
     [Header("Settings")]
     [SerializeField, Min(0f)] private float _speed;
-    [SerializeField, Min(0f)] private float _useCooldown;
 
     [Header("Dependencies")]
     [SerializeField] private Rigidbody _rigidbody;
-    [SerializeField] private MonoBehaviour _toolGameObject;
+    [SerializeField] private GameObject _toolGameObject;
 
     [Header("Inputs")]
-    [SerializeField] private MonoBehaviour _userGameObject;
-    [SerializeField] private MonoBehaviour _moveGameObject;
-    [SerializeField] private MonoBehaviour _rotateGameObject;
+    [SerializeField] private GameObject _userGameObject;
+    [SerializeField] private GameObject _moveGameObject;
+    [SerializeField] private GameObject _rotateGameObject;
 
 
     private IUsable _tool;
@@ -23,7 +21,9 @@ public class Avatar : MonoBehaviour, IDamageable
     private IMove _move;
     private ILook _rotate;
 
-    private float _canUseTime;
+
+    public Vector3 Position => transform.position;
+    public Vector3 Velocity => _rigidbody.velocity;
 
 
     private void Awake()
@@ -63,6 +63,13 @@ public class Avatar : MonoBehaviour, IDamageable
         _rotate.OnLook += LookAt;
     }
 
+    private void OnDrawGizmos()
+    {
+        Handles.color = Color.red; 
+        Handles.DrawLine(transform.position, transform.position + _rigidbody.velocity.normalized);
+        Handles.color = Color.green;
+        Handles.DrawLine(transform.position, transform.position + (transform.rotation * Vector3.forward));
+    }
 
     public void TakeDamage(float damage)
     {
@@ -72,9 +79,6 @@ public class Avatar : MonoBehaviour, IDamageable
 
     private void Use()
     {
-        if (Time.time < _canUseTime) { return; }
-
-        _canUseTime = Time.time + _useCooldown;
         _tool?.Use();
     }
     private void Move(Vector3 moveDelta)
@@ -83,8 +87,6 @@ public class Avatar : MonoBehaviour, IDamageable
     }
     private void LookAt(Vector3 point)
     {
-        Vector3 direction = point - transform.position;
-        direction = new Vector3(direction.x, 0, direction.z);
-        transform.rotation = Quaternion.LookRotation(direction);
+        transform.LookAt(point);
     }
 }

@@ -1,17 +1,23 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
 
-public class Gun : MonoBehaviour, IUsable
+public class Gun : MonoBehaviour, IUsable, ITrajectory
 {
-    [SerializeField] private Transform _spawnPoint;
-    [SerializeField] private float _delay;
+    [Header("Settings")]
+    [SerializeField, Min(0f)] private float _useCooldown;
+
+    [Header("Objects")]
     [SerializeField] private GameObject _pooledGameObject;
+    [SerializeField] private Transform _spawnPoint;
+
+
     private IPooledObject _pooledObject;
-
-
     private IObjectPool<IPooledObject> _pool;
+    private float _canUseTime;
+
+
+    public Vector3 Position => _spawnPoint.position;
+    public Vector3 Velocity => (_pooledObject is ITrajectory) ? _spawnPoint.rotation * ((ITrajectory)_pooledObject).Velocity : Vector3.zero;
 
 
     private void Awake()
@@ -20,12 +26,15 @@ public class Gun : MonoBehaviour, IUsable
         {
             Debug.LogError("Gun - IPooledObject Pooled Game Object must have a IPooledObject.");
         }
-        _pool = new ObjectPool<IPooledObject>(CreatePooledObject, OnGetPooledObject, OnReleasePooledObject, OnDestroyPooledObject, false, 10, 1000);
+        _pool = new ObjectPool<IPooledObject>(CreatePooledObject, OnGetPooledObject, OnReleasePooledObject, OnDestroyPooledObject);
     }
 
 
     public void Use()
     {
+        if (Time.time < _canUseTime) { return; }
+
+        _canUseTime = Time.time + _useCooldown;
         _pool.Get();
     }
 
@@ -33,7 +42,7 @@ public class Gun : MonoBehaviour, IUsable
     private IPooledObject CreatePooledObject()
     {
         var obj = _pooledObject.Instantiate(transform);
-        obj.OnRelease += (s) => _pool.Release(s); ;
+        obj.OnRelease += (s) => _pool.Release(s);
         return obj;
     }
     private void OnGetPooledObject(IPooledObject obj)
