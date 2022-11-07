@@ -5,22 +5,16 @@ using UnityEngine;
 public class Bullet : MonoBehaviour, IPooledObject, ITrajectory
 {
     [Header("Debug")]
-    [SerializeField] private float _gizmoLineLength;
+    [SerializeField, Min(0)] private float _gizmoLineLength;
 
     [Header("Settings")]
     [SerializeField, Min(0)] private float _damage;
     [SerializeField, Min(0)] private float _speed;
-    [SerializeField, Min(0)] private float _lifetime;
-    [SerializeField, Min(0)] private int _maxBounces;
 
 
     public event Action<IPooledObject> OnRelease;
     public Vector3 Velocity => transform.rotation * Vector3.forward * _speed;
     public Vector3 Position => transform.position;
-
-
-    private float _timeLeft;
-    private int _bounceCount;
 
 
     public IPooledObject Instantiate(Transform parent)
@@ -31,14 +25,6 @@ public class Bullet : MonoBehaviour, IPooledObject, ITrajectory
 
     private void Update()
     {
-        _timeLeft -= Time.deltaTime;
-        if (_timeLeft < 0)
-        {
-            OnRelease.Invoke(this);
-            return;
-        }
-
-
         float distanceLeft = _speed * Time.deltaTime;
 
         Vector3 currentPos = transform.position;
@@ -48,16 +34,9 @@ public class Bullet : MonoBehaviour, IPooledObject, ITrajectory
         while (distanceLeft > 0)
         {
             Ray prediction = new Ray(currentPos, currentDir);
-            if (Physics.Raycast(prediction, out RaycastHit hitInfo, distanceLeft))
+            if (Physics.Raycast(prediction, out RaycastHit hitInfo, distanceLeft) && !hitInfo.transform.TryGetComponent(out IPassThrough pass))
             {
                 if (CheckCollision(hitInfo)) { return; }
-
-                _bounceCount--;
-                if (_bounceCount < 0)
-                {
-                    OnRelease.Invoke(this);
-                    return;
-                }
 
                 distanceLeft -= (hitInfo.point - currentPos).magnitude;
                 currentPos = hitInfo.point;
@@ -79,25 +58,16 @@ public class Bullet : MonoBehaviour, IPooledObject, ITrajectory
 
         Vector3 currentPos = transform.position;
         Vector3 currentDir = transform.rotation * Vector3.forward;
-        float distanceLeft = _speed * _timeLeft;
-
-        int predictionBounceCount = _bounceCount;
+        float distanceLeft = _gizmoLineLength;
 
         while (distanceLeft > 0)
         {
             Ray prediction = new Ray(currentPos, currentDir);
-            if (Physics.Raycast(prediction, out RaycastHit hitInfo, distanceLeft))
+            if (Physics.Raycast(prediction, out RaycastHit hitInfo, distanceLeft) && !hitInfo.transform.TryGetComponent(out IPassThrough pass))
             {
                 Handles.DrawLine(currentPos, hitInfo.point);
 
                 if (CheckCollision(hitInfo, true)) { return; }
-
-                predictionBounceCount--;
-                if (predictionBounceCount < 0)
-                {
-                    return;
-                }
-
                 distanceLeft -= (hitInfo.point - currentPos).magnitude;
                 currentPos = hitInfo.point;
                 currentDir = Vector3.Reflect(currentDir, hitInfo.normal);
@@ -115,8 +85,6 @@ public class Bullet : MonoBehaviour, IPooledObject, ITrajectory
     {
         transform.position = position;
         transform.rotation = rotation;
-        _timeLeft = _lifetime;
-        _bounceCount = _maxBounces;
         gameObject.SetActive(true);
     }
     public void OnPoolRelease()

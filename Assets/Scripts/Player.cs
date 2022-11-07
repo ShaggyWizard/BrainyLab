@@ -11,8 +11,10 @@ public class Player : MonoBehaviour, IMove, ILook, IUser
     public event Action<Vector3> OnLook;
     public event Action OnUse;
 
+
     private Vector3 _direction;
     private Plane _plane;
+
 
     private void Awake()
     {

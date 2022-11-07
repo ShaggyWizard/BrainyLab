@@ -131,5 +131,3 @@ MonoBehaviour:
   _gizmoLineLength: 200
   _damage: 1
   _speed: 10
-  _lifetime: 6
-  _maxBounces: 1
