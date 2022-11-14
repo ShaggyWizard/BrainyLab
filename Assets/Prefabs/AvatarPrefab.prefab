@@ -132,7 +132,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _speed: 1000
-  _rigidbody: {fileID: 7942451729861518866}
+  _colorRenderer: {fileID: 7942451727972648985}
   _toolGameObject: {fileID: 7942451729171910760}
   _userGameObject: {fileID: 7942451729861518862}
   _moveGameObject: {fileID: 7942451729861518862}

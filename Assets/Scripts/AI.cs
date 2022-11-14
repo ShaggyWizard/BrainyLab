@@ -55,6 +55,8 @@ public class AI : MonoBehaviour, IMove, ILook, IUser
     {
         OnMove?.Invoke(_direction * Time.fixedDeltaTime);
     }
+
+#if UNITY_EDITOR
     private void OnDrawGizmos()
     {
         if (_tool == null || _target == null) { return; }
@@ -66,6 +68,7 @@ public class AI : MonoBehaviour, IMove, ILook, IUser
 
         Handles.DrawLine(transform.position, target);
     }
+#endif
 
 
     private void Aim()

@@ -2,7 +2,7 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-public class Bullet : MonoBehaviour, IPooledObject, ITrajectory
+public class Bullet : MonoBehaviour, IPooledObject, ITrajectory, ISender
 {
     [Header("Debug")]
     [SerializeField, Min(0)] private float _gizmoLineLength;
@@ -16,6 +16,7 @@ public class Bullet : MonoBehaviour, IPooledObject, ITrajectory
     public Vector3 Velocity => transform.rotation * Vector3.forward * _speed;
     public Vector3 Position => transform.position;
 
+    public ISender Sender { get; private set; }
 
     public IPooledObject Instantiate(Transform parent)
     {
@@ -52,6 +53,7 @@ public class Bullet : MonoBehaviour, IPooledObject, ITrajectory
         transform.position = currentPos;
         transform.rotation = Quaternion.LookRotation(currentDir);
     }
+#if UNITY_EDITOR
     private void OnDrawGizmos()
     {
         Handles.color = Color.white;
@@ -79,6 +81,7 @@ public class Bullet : MonoBehaviour, IPooledObject, ITrajectory
             }
         }
     }
+#endif
 
 
     public void OnPoolGet(Vector3 position, Quaternion rotation)
@@ -101,14 +104,19 @@ public class Bullet : MonoBehaviour, IPooledObject, ITrajectory
     {
         if (hitInfo.transform.TryGetComponent(out IDamageable damageable))
         {
-            if (!onlyCheck)
-            {
-                damageable.TakeDamage(_damage);
-                OnRelease.Invoke(this);
-            }
+            if (onlyCheck) { return true; }
+
+            damageable.TakeDamage(_damage, Sender);
+            OnRelease.Invoke(this);
+
             return true;
         }
 
         return false;
+    }
+
+    public void SetSender(ISender sender)
+    {
+        Sender = sender;
     }
 }
